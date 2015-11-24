@@ -31,14 +31,31 @@
         .ztree li span.button::before {
             color: #aaa;
         }
-        #selected-area span {
+        #selected-area {
+        	max-height: 70px;
+        	overflow-y: auto;
+        }
+        .selected-item {
+        	position: relative;
         	float: left;
-    	    margin-right: 15px;
-    	    margin-bottom: 10px;
+    	    margin: 5px 10px;
 		    background-color: #337ab7;
 		    padding: 2px 8px;
 		    border-radius: 8px;
 		    color: #fff;
+        }
+        .remove-icon {
+		    position: absolute;
+		    top: -5px;
+		    width: 18px;
+		    text-align: center;
+		    background-color: red;
+		    border-radius: 10px;
+		    display: none;
+        }
+        .selected-item:hover .remove-icon {    
+        	display: inline-block;
+        	cursor: pointer;
         }
     </style>
 
@@ -208,9 +225,29 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 			}
 		}
 		checkNodes.forEach(function(node){
+			var div = $('<div></div>');
 			var span = $('<span></span>').text(node.name);
-			selectedArea.append(span);
+			var icon = $('<span></span>').text('x');
+			div.addClass('selected-item');
+			div.attr('id', node.id);
+			icon.addClass('remove-icon');
+			icon.on('click', function(){
+				remove(node);
+			});
+			selectedArea.append(div);
+			div.append(span);
+			div.append(icon);		
 		})
+    }
+
+    function remove(node) {
+    	$('#' + node.id).remove();
+    	checkNodes.forEach(function(n, i){
+    		if(n.id === node.id){
+    			checkNodes.splice(i, 1);
+    		}
+    	})
+    	console.log(checkNodes);
     }
 
    
