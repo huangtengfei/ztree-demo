@@ -207,6 +207,8 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
             onCheck: onCheck
         }
     };
+    var nodesMap = {};
+    var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
     var selectedArea = $('#selected-area');
 
     function setCheck() {
@@ -224,7 +226,27 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 				i--;
 			}
 		}
+		console.log(checkNodes);
+
 		checkNodes.forEach(function(node){
+			if(node.isParent){
+				node.children.forEach(function(n1, i1){
+					checkNodes.forEach(function(n2, i2){
+						if(n1.id === n2.id){
+							checkNodes.splice(i2, 1);
+							i2--;
+						}
+					})
+				})
+			}
+		})
+		console.log(checkNodes);
+
+		updateSelected(checkNodes);
+    }
+
+    function updateSelected(checkNodes) {
+    	checkNodes.forEach(function(node){
 			var div = $('<div></div>');
 			var span = $('<span></span>').text(node.name);
 			var icon = $('<span></span>').text('x');
@@ -243,12 +265,24 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
     function remove(node) {
     	$('#' + node.id).remove();
     	checkNodes.forEach(function(n, i){
-    		if(n.id === node.id){
-    			checkNodes.splice(i, 1);
+    		if(n.id === node.id){		
+    			// checkNodes.splice(i, 1);
+    			// onCheck();
+    			var treeObj = $.fn.zTree.getZTreeObj('treeDemo'); 
+    			treeObj.checkNode(n, false, true);
     		}
-    	})
-    	console.log(checkNodes);
+    	});	
     }
+
+    function getChildren(ids,treeNode){
+		ids.push(treeNode.id);
+		if (treeNode.isParent){
+			for(var obj in treeNode.children){
+				getChildren(ids,treeNode.children[obj]);
+			}
+	    }
+		return ids;
+	}
 
    
 
