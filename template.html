@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>demo</title>
+	<meta charset="utf8">
+	<link href="./css/bootstrap.min.css" rel="stylesheet">
+
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">  
+    <link rel="stylesheet" href="./css/demo.css" type="text/css">
+    <link rel="stylesheet" href="./css/awesomeStyle/awesome.css" type="text/css">
+
+	<script src="./libs/jquery.min.js"></script>
+	<script src="./libs/bootstrap.min.js"></script>
+	
+	<script type="text/javascript" src="./libs/jquery.ztree.all-3.5.js"></script>
+    <script src="data.js"></script>
+
+    <style>
+	    .limit-height-dialog {
+	        height: 580px;
+	        overflow: auto;
+	    }
+        ul.ztree {
+            border: none;
+            background: #fff;
+        }
+        .ztree * {
+            background-color: #fff;
+            color: #aaa;
+        }
+        .ztree li span.button::before {
+            color: #aaa;
+        }
+        #selected-area span {
+        	float: left;
+    	    margin-right: 15px;
+    	    margin-bottom: 10px;
+		    background-color: #337ab7;
+		    padding: 2px 8px;
+		    border-radius: 8px;
+		    color: #fff;
+        }
+    </style>
+
+</head>
+<body>
+
+	<!-- 按钮触发模态框 -->
+	<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#outerModal">
+		点我
+	</button>
+
+	<!-- 模态框（Modal） -->
+	<div class="modal fade" id="outerModal" tabindex="-1" role="dialog" 
+	aria-labelledby="outerModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" 
+				aria-hidden="true">×
+			</button>
+			<h4 class="modal-title" id="outerModalLabel">
+				新增应用
+			</h4>
+		</div>
+		<div class="modal-body">
+
+			<form class="form-horizontal">
+				<div class="form-group">
+					<label class="col-sm-2 control-label">订阅设置</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" onfocus="set()" id="subscription">
+					</div>
+				</div>
+			</form>
+
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" 
+			data-dismiss="modal">
+			关闭
+		</button>
+		<button type="button" class="btn btn-primary">
+			提交
+		</button>
+	</div>
+</div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="innerModal" tabindex="-1" role="dialog" 
+aria-labelledby="innerModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" 
+			aria-hidden="true">×
+		</button>
+		<h4 class="modal-title" id="innerModalLabel">
+			选择订阅范围
+		</h4>
+	</div>
+	<div class="modal-body limit-height-dialog">
+
+		<form class="form-horizontal">
+			<div class="form-group">				
+				<div class="col-sm-12">
+					<input type="text" id="searchBox" class="form-control" placeholder="搜索">
+				</div>
+			</div>
+			<ul id="treeDemo" class="ztree"></ul>
+			<div class="form-group">
+	            <hr/>
+	        </div>
+	        <div class="form-group">
+	            <div class="col-sm-12" id="selected-con">
+	            	<span class="col-sm-3">已选部门/人员：</span>
+	            	<div class="col-sm-9" id="selected-area">
+	            		
+	            	</div>
+	            </div>
+	        </div>
+		</form>
+
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" 
+		data-dismiss="modal">
+		关闭
+	</button>
+	<button type="button" class="btn btn-primary" onclick="save()">
+		提交
+	</button>
+</div>
+</div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<script>
+	var selected, checkNodes = [];
+	var search = $('#searchBox'),
+		sub = $('#subscription');
+
+	// $('#outerModal').on('show.bs.modal', function () {
+	// 	selected = [];	
+	// })	
+
+	// 打开内层弹窗
+	function set(){
+		$('#innerModal').modal('show');	
+		checkNodes = checkNodes || [];	
+	}
+
+	// $('#innerModal').on('show.bs.modal', function () {
+	// 	search.val(selected);
+	// })
+
+	// 关闭内层弹窗，保存，更新外层弹窗字段值
+	function save() {
+		var range = '';
+		selected = checkNodes;
+		selected.forEach(function(s) {
+			range = range + s.name + '; '
+		})
+		sub.val(range);
+		$('#innerModal').modal('hide');
+	}
+</script>
+
+<script>
+	var setting = {
+        view: {
+            selectedMulti: true,
+            showIcon: false
+        },
+        check: {
+            enable: true,
+            chkStyle: 'checkbox',
+            radioType: "level"
+        },
+        data: {
+            simpleData: {
+                enable: true,
+                // idKey: "orgId",
+                // pIdKey: "parentOrgId"
+            }
+        },
+        callback: {
+            onCheck: onCheck
+        }
+    };
+    var selectedArea = $('#selected-area');
+
+    function setCheck() {
+		$.fn.zTree.init($("#treeDemo"), setting, zNodes);
+	}
+
+	function onCheck() {
+    	var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+    	selectedArea.empty();
+		checkNodes = zTree.getCheckedNodes(true);
+		for(var i = 0; i < checkNodes.length; i++) {
+			var halfCheck = checkNodes[i].getCheckStatus();
+			if (halfCheck.half || (checkNodes[i].check_Child_State == 1)){
+				checkNodes.splice(i, 1);
+				i--;
+			}
+		}
+		checkNodes.forEach(function(node){
+			var span = $('<span></span>').text(node.name);
+			selectedArea.append(span);
+		})
+    }
+
+    $(document).ready(function(){
+    	zNodes.forEach(function(z){
+    		checkNodes.forEach(function(c){
+    			if(c.id === z.id){
+    				z.checked = true;
+    				z.open = true;
+    			}
+    		})
+    	})
+        $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+		setCheck();			
+		$("#r1").bind("change", setCheck);
+		$("#r2").bind("change", setCheck);
+		$("#disablechk").bind("change", setCheck);
+    });
+
+</script>
+
+</body>
+</html>
