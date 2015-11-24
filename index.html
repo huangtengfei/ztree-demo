@@ -105,7 +105,7 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 		<form class="form-horizontal">
 			<div class="form-group">				
 				<div class="col-sm-12">
-					<input type="text" id="searchBox" class="form-control" placeholder="搜索">
+					<input type="text" id="key" class="form-control" placeholder="搜索">
 				</div>
 			</div>
 			<ul id="treeDemo" class="ztree"></ul>
@@ -139,8 +139,7 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 
 <script>
 	var selected, checkNodes = [];
-	var search = $('#searchBox'),
-		sub = $('#subscription');
+	var sub = $('#subscription');
 
 	// $('#outerModal').on('show.bs.modal', function () {
 	// 	selected = [];	
@@ -172,7 +171,8 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 	var setting = {
         view: {
             selectedMulti: true,
-            showIcon: false
+            showIcon: false,
+            fontCss: getFontCss
         },
         check: {
             enable: true,
@@ -213,6 +213,45 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 		})
     }
 
+    // 以下这些方法用于搜索
+    function focusKey(e) {
+		if (key.hasClass("empty")) {
+			key.removeClass("empty");
+		}
+	}
+	function blurKey(e) {
+		if (key.get(0).value === "") {
+			key.addClass("empty");
+		}
+	}
+
+    var key, lastValue = "", nodeList = [];
+    function searchNode(e) {
+		var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+		var keyType = "name";
+		var value = $.trim(key.get(0).value);
+		if (key.hasClass("empty")) {
+			value = "";
+		}
+		if (lastValue === value) return;
+		lastValue = value;
+		if (value === "") return;
+		updateNodes(false);
+		nodeList = zTree.getNodesByParamFuzzy(keyType, value);
+		updateNodes(true);
+	}
+	function updateNodes(highlight) {
+		var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+		for( var i=0, l=nodeList.length; i<l; i++) {
+			nodeList[i].highlight = highlight;
+			zTree.updateNode(nodeList[i]);
+		}
+	}
+
+	function getFontCss(treeId, treeNode) {
+		return (!!treeNode.highlight) ? {color:"#A60000", "font-weight":"bold"} : {color:"#333", "font-weight":"normal"};
+	}
+
     $(document).ready(function(){
     	zNodes.forEach(function(z){
     		checkNodes.forEach(function(c){
@@ -223,6 +262,11 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
     		})
     	})
         $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+        key = $("#key");
+		key.bind("focus", focusKey)
+			.bind("blur", blurKey)
+			.bind("propertychange", searchNode)
+			.bind("input", searchNode);
 		setCheck();			
 		$("#r1").bind("change", setCheck);
 		$("#r2").bind("change", setCheck);
