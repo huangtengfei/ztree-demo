@@ -57,6 +57,12 @@
         	display: inline-block;
         	cursor: pointer;
         }
+        #search-result {
+			display: none;
+        }
+        #search-result a {
+        	text-decoration: none;
+        }
     </style>
 
 </head>
@@ -120,10 +126,16 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 	<div class="modal-body limit-height-dialog">
 
 		<form class="form-horizontal">
-			<div class="form-group">				
+			<div class="form-group" style="margin-bottom: 0;">				
 				<div class="col-sm-12">
-					<input type="text" id="key" onkeyup="changeColor('treeDemo','name',this.value)" class="form-control" placeholder="搜索">
+					<input type="text" id="key" onkeyup="search('treeDemo','name',this.value)" class="form-control" placeholder="搜索">
 				</div>
+			</div>
+			<div class="list-group" id="search-result">
+			  <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
+			  <a href="#" class="list-group-item">Morbi leo risus</a>
+			  <a href="#" class="list-group-item">Porta ac consectetur ac</a>
+			  <a href="#" class="list-group-item">Vestibulum at eros</a>
 			</div>
 			<ul id="treeDemo" class="ztree"></ul>
 			<div class="form-group">
@@ -185,7 +197,8 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 </script>
 
 <script>
-	var setting = {
+	var push = [].push,
+		setting = {
         view: {
             selectedMulti: true,
             showIcon: false,
@@ -216,35 +229,45 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 	}
 
 	function onCheck() {
-    	var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-    	selectedArea.empty();
-		checkNodes = zTree.getCheckedNodes(true);
-		for(var i = 0; i < checkNodes.length; i++) {
-			var halfCheck = checkNodes[i].getCheckStatus();
-			if (halfCheck.half || (checkNodes[i].check_Child_State == 1)){
-				checkNodes.splice(i, 1);
-				i--;
-			}
-		}
-		console.log(checkNodes);
+		var zTree = $.fn.zTree.getZTreeObj("treeDemo"),
+			nodes = zTree.getCheckedNodes(true),
+			checkedNodes;
+		selectedArea.empty();
+		
+		nodes = nodes.filter(function(v){
+			return v.getParentNode() === null;
+		});
+		console.log(nodes);
+		
+		checkedNodes = handle(nodes);
+		console.log('len %s', checkedNodes.length);
+		checkedNodes.forEach(v=> {
+			console.log('id: %s, name %s', v.id, v.name);
+		});
 
-		var tmpNodes = [];
-		checkNodes.forEach(function(node){
-			if(node.children){
-				node.children.forEach(function(n1, i1){
-					checkNodes.forEach(function(n2, i2){
-						if(n1.id === n2.id){
-							checkNodes.splice(i2, 1);
-							i2--;
-						}
-					})
-				})
-			}
-		})
-		console.log(checkNodes);
+		console.log('-'.repeat(20));
 
-		updateSelected(checkNodes);
+		updateSelected(handle(nodes));
     }
+
+    // 先找出选中节点中最上层的节点，然后遍历，半选的直接放到结果中，全选的再对children递归
+	function handle(nodes){
+		return nodes.reduce(function(result, v){
+			var checked = v.getCheckStatus();
+			if(checked.checked){
+				if(!checked.half){
+					result.push(v);
+				} else {
+					if(Array.isArray(v.children)){
+						push.apply(result, handle(v.children));
+					} else {
+						console.log('node is checked=true, half = true, but node.children is not Array ', v);
+					}
+				}
+			}
+			return result;
+		} ,[]);
+	}
 
     function contains(arr, obj){
 		var n = arr.length;
@@ -299,12 +322,15 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 
     var nodeList = [];
 
-    function changeColor(id,key,value){  
+    function search(id,key,value){  
 	    treeId = id;  
 	    updateNodes(false);  
 	    if(value != ""){  
 	        var treeObj = $.fn.zTree.getZTreeObj(treeId);  
-	        nodeList = treeObj.getNodesByParamFuzzy(key, value);  
+	        nodeList = treeObj.getNodesByParamFuzzy(key, value); 
+	        console.log('----------nodeList----------');
+	        console.log(nodeList);
+	        treeObj.expandNode(nodeList[1], true, true, true); 
 	        if(nodeList && nodeList.length>0){  
 	            updateNodes(true);  
 	        }  
