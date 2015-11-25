@@ -228,8 +228,9 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 		}
 		console.log(checkNodes);
 
+		var tmpNodes = [];
 		checkNodes.forEach(function(node){
-			if(node.isParent){
+			if(node.children){
 				node.children.forEach(function(n1, i1){
 					checkNodes.forEach(function(n2, i2){
 						if(n1.id === n2.id){
@@ -244,6 +245,16 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 
 		updateSelected(checkNodes);
     }
+
+    function contains(arr, obj){
+		var n = arr.length;
+		while(n--) {
+			if (obj.id===arr[n].id) {
+				return true;
+			};	
+		}
+		return false;
+	}
 
     function updateSelected(checkNodes) {
     	checkNodes.forEach(function(node){
@@ -266,8 +277,6 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
     	$('#' + node.id).remove();
     	checkNodes.forEach(function(n, i){
     		if(n.id === node.id){		
-    			// checkNodes.splice(i, 1);
-    			// onCheck();
     			var treeObj = $.fn.zTree.getZTreeObj('treeDemo'); 
     			treeObj.checkNode(n, false, true);
     		}
