@@ -167,7 +167,7 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 
 
 <script>
-	var selected, checkNodes = [];
+	var selected, checkedNodes = [];
 	var sub = $('#subscription');
 
 	// $('#outerModal').on('show.bs.modal', function () {
@@ -177,7 +177,7 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 	// 打开内层弹窗
 	function set(){
 		$('#innerModal').modal('show');	
-		checkNodes = checkNodes || [];	
+		checkedNodes = checkedNodes || [];	
 	}
 
 	// $('#innerModal').on('show.bs.modal', function () {
@@ -187,7 +187,11 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 	// 关闭内层弹窗，保存，更新外层弹窗字段值
 	function save() {
 		var range = '';
-		selected = checkNodes;
+		// var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+		// selected = zTree.getCheckedNodes(true).filter(function(n){
+		// 	return n.check_Child_State != 1;
+		// });
+		selected = checkedNodes;
 		selected.forEach(function(s) {
 			range = range + s.name + '; '
 		})
@@ -230,24 +234,23 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 
 	function onCheck() {
 		var zTree = $.fn.zTree.getZTreeObj("treeDemo"),
-			nodes = zTree.getCheckedNodes(true),
-			checkedNodes;
+			nodes = zTree.getCheckedNodes(true);
 		selectedArea.empty();
 		
 		nodes = nodes.filter(function(v){
 			return v.getParentNode() === null;
 		});
 		console.log(nodes);
-		
+
 		checkedNodes = handle(nodes);
 		console.log('len %s', checkedNodes.length);
-		checkedNodes.forEach(v=> {
+		checkedNodes.forEach(function(v){
 			console.log('id: %s, name %s', v.id, v.name);
 		});
 
 		console.log('-'.repeat(20));
 
-		updateSelected(handle(nodes));
+		updateSelected(checkedNodes);
     }
 
     // 先找出选中节点中最上层的节点，然后遍历，半选的直接放到结果中，全选的再对children递归
@@ -279,8 +282,8 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 		return false;
 	}
 
-    function updateSelected(checkNodes) {
-    	checkNodes.forEach(function(node){
+    function updateSelected(checkedNodes) {
+    	checkedNodes.forEach(function(node){
 			var div = $('<div></div>');
 			var span = $('<span></span>').text(node.name);
 			var icon = $('<span></span>').text('x');
@@ -298,10 +301,11 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 
     function remove(node) {
     	$('#' + node.id).remove();
-    	checkNodes.forEach(function(n, i){
+    	checkedNodes.forEach(function(n, i){
     		if(n.id === node.id){		
     			var treeObj = $.fn.zTree.getZTreeObj('treeDemo'); 
     			treeObj.checkNode(n, false, true);
+    			checkedNodes.splice(i, 1);
     		}
     	});	
     }
@@ -351,7 +355,7 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 
     $(document).ready(function(){
     	zNodes.forEach(function(z){
-    		checkNodes.forEach(function(c){
+    		checkedNodes.forEach(function(c){
     			if(c.id === z.id){
     				z.checked = true;
     				z.open = true;
