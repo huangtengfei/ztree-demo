@@ -128,7 +128,7 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 		<form class="form-horizontal">
 			<div class="form-group" style="margin-bottom: 0;">				
 				<div class="col-sm-12">
-					<input type="text" id="key" onkeyup="search('treeDemo','name',this.value)" class="form-control" placeholder="搜索">
+					<input type="text" id="key" onkeyup="search('treeDemo','name',this.value)" onfocus="showResult()" class="form-control" placeholder="搜索">
 				</div>
 			</div>
 			<div class="list-group" id="search-result"></div>
@@ -322,6 +322,13 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 
     var nodeList = [];
 
+    function showResult() {
+		if(nodeList.length) {
+			searchResult.show();
+			$('#treeDemo').hide();
+		}
+	}
+
     function search(id,key,value){  
 	    treeId = id;  
 	    updateNodes(false);  
@@ -330,11 +337,12 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 	        nodeList = treeObj.getNodesByParamFuzzy(key, value); 	       
 	        if(nodeList && nodeList.length>0){  
 	            updateNodes(true);  
-	            searchResult.css('display', 'block');
+	            searchResult.show();
+	            $('#treeDemo').hide();
 	            updateSearch(nodeList);
 	        }  
 	    }else{
-	    	searchResult.css('display', 'none');
+	    	searchResult.hide();
 	    }
 	}  
 
@@ -347,10 +355,12 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 			a.on('click', function(){
 				var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
 				treeObj.selectNode(n);
+				searchResult.hide();
+				$('#treeDemo').show();
 			});
 			searchResult.append(a);
 		})
-	}
+	}	
 
 	function updateNodes(highlight) {  
 	    var treeObj = $.fn.zTree.getZTreeObj(treeId);  
