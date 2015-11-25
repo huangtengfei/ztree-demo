@@ -131,12 +131,7 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 					<input type="text" id="key" onkeyup="search('treeDemo','name',this.value)" class="form-control" placeholder="搜索">
 				</div>
 			</div>
-			<div class="list-group" id="search-result">
-			  <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
-			  <a href="#" class="list-group-item">Morbi leo risus</a>
-			  <a href="#" class="list-group-item">Porta ac consectetur ac</a>
-			  <a href="#" class="list-group-item">Vestibulum at eros</a>
-			</div>
+			<div class="list-group" id="search-result"></div>
 			<ul id="treeDemo" class="ztree"></ul>
 			<div class="form-group">
 	            <hr/>
@@ -226,7 +221,8 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
     };
     var nodesMap = {};
     var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
-    var selectedArea = $('#selected-area');
+    var selectedArea = $('#selected-area'),
+    	searchResult = $('#search-result');
 
     function setCheck() {
 		$.fn.zTree.init($("#treeDemo"), setting, zNodes);
@@ -331,15 +327,28 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 	    updateNodes(false);  
 	    if(value != ""){  
 	        var treeObj = $.fn.zTree.getZTreeObj(treeId);  
-	        nodeList = treeObj.getNodesByParamFuzzy(key, value); 
-	        console.log('----------nodeList----------');
-	        console.log(nodeList);
-	        treeObj.expandNode(nodeList[1], true, true, true); 
+	        nodeList = treeObj.getNodesByParamFuzzy(key, value); 	       
 	        if(nodeList && nodeList.length>0){  
 	            updateNodes(true);  
+	            searchResult.css('display', 'block');
+	            updateSearch(nodeList);
 	        }  
-	    }  
+	    }
 	}  
+
+	function updateSearch(nodeList){
+		searchResult.empty();
+		nodeList.forEach(function(n){
+			var a = $('<a></a>').text(n.name);
+			a.addClass('list-group-item');
+			a.css('cursor', 'pointer');
+			a.on('click', function(){
+				var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
+				treeObj.expandNode(n, true, true, true);
+			});
+			searchResult.append(a);
+		})
+	}
 
 	function updateNodes(highlight) {  
 	    var treeObj = $.fn.zTree.getZTreeObj(treeId);  
