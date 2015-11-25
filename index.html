@@ -333,6 +333,8 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 	            searchResult.css('display', 'block');
 	            updateSearch(nodeList);
 	        }  
+	    }else{
+	    	searchResult.css('display', 'none');
 	    }
 	}  
 
@@ -344,7 +346,7 @@ aria-labelledby="innerModalLabel" aria-hidden="true">
 			a.css('cursor', 'pointer');
 			a.on('click', function(){
 				var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
-				treeObj.expandNode(n, true, true, true);
+				treeObj.selectNode(n);
 			});
 			searchResult.append(a);
 		})
