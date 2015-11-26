@@ -63,12 +63,12 @@ function onCheck() {
 	console.log(nodes);
 
 	checkedNodes = handle(nodes);
-	console.log('len %s', checkedNodes.length);
+	//console.log('len %s', checkedNodes.length);
 	checkedNodes.forEach(function(v){
 		console.log('id: %s, name %s', v.id, v.name);
 	});
 
-	console.log('-'.repeat(20));
+	//console.log('-'.repeat(20));
 
 	updateSelected(checkedNodes);
 }
